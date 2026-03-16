@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WIN GO AI SYSTEM</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --cyan: #00f5ff;
+  --pink: #ff2d78;
+  --purple: #b44aff;
+  --green: #00ff9d;
+  --gold: #ffd700;
+  --bg: #04040f;
+  --card: rgba(255,255,255,0.03);
+  --border: rgba(255,255,255,0.07);
+}
+
+body {
+  font-family: 'Rajdhani', sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  color: #fff;
+  overflow-x: hidden;
+}
+
+/* ── BACKGROUND ── */
+.bg-canvas {
+  position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+}
+.bg-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,245,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,245,255,0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+.bg-radial-1 {
+  position: absolute; width: 600px; height: 600px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,245,255,0.07) 0%, transparent 65%);
+  top: -200px; left: -200px;
+}
+.bg-radial-2 {
+  position: absolute; width: 700px; height: 700px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,45,120,0.06) 0%, transparent 65%);
+  bottom: -300px; right: -200px;
+}
+.bg-radial-3 {
+  position: absolute; width: 400px; height: 400px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(180,74,255,0.05) 0%, transparent 65%);
+  top: 50%; left: 50%; transform: translate(-50%,-50%);
+}
+.particle { position: absolute; border-radius: 50%; pointer-events: none; animation: float-up linear infinite; }
+
+/* ── LAYOUT ── */
+.container { position: relative; z-index: 1; max-width: 500px; margin: 0 auto; padding: 20px 16px 60px; }
+
+/* ── TOP NAV ── */
+.top-nav { display: flex; gap: 8px; margin-bottom: 22px; justify-content: center; flex-wrap: wrap; }
+.nav-btn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 8px 18px; border-radius: 30px;
+  font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 700;
+  letter-spacing: 0.5px; text-decoration: none; transition: all 0.25s; cursor: pointer; border: none;
+}
+.tg-btn { background: rgba(0,136,204,0.1); border: 1px solid rgba(0,136,204,0.3); color: #29b6f6; }
+.tg-btn:hover { background: rgba(0,136,204,0.22); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,136,204,0.25); }
+.reg-btn { background: linear-gradient(135deg, rgba(255,45,120,0.12), rgba(180,74,255,0.1)); border: 1px solid rgba(255,45,120,0.35); color: #ff6aaa; }
+.reg-btn:hover { background: linear-gradient(135deg, rgba(255,45,120,0.22), rgba(180,74,255,0.18)); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,45,120,0.22); }
+
+/* ── LOGO ── */
+.header { text-align: center; margin-bottom: 18px; }
+.logo-wrap { position: relative; display: inline-block; margin-bottom: 8px; }
+.logo {
+  font-family: 'Orbitron', monospace; font-size: 38px; font-weight: 900; letter-spacing: 8px;
+  background: linear-gradient(90deg, var(--cyan) 0%, var(--pink) 40%, var(--purple) 70%, var(--cyan) 100%);
+  background-size: 300% 100%;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  animation: logo-shimmer 4s linear infinite; line-height: 1;
+}
+.logo-glow {
+  position: absolute; inset: -4px; border-radius: 8px;
+  background: linear-gradient(90deg, rgba(0,245,255,0.08), rgba(255,45,120,0.08));
+  filter: blur(10px); z-index: -1;
+}
+.logo-sub { font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 6px; color: rgba(0,245,255,0.4); }
+
+/* ── AI BADGE ── */
+.ai-active-badge {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: linear-gradient(135deg, rgba(0,255,157,0.08), rgba(0,245,255,0.08));
+  border: 1px solid rgba(0,255,157,0.25); border-radius: 12px;
+  padding: 10px 20px; margin-bottom: 18px;
+  animation: badge-pulse 3s ease-in-out infinite;
+}
+.ai-orb { position: relative; width: 10px; height: 10px; }
+.ai-orb-inner { width: 10px; height: 10px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px var(--green); animation: orb-blink 1.2s ease-in-out infinite; }
+.ai-orb-ring { position: absolute; inset: -4px; border-radius: 50%; border: 1px solid rgba(0,255,157,0.4); animation: orb-ring 1.2s ease-in-out infinite; }
+.ai-text-wrap { display: flex; flex-direction: column; gap: 1px; }
+.ai-title { font-family: 'Orbitron', monospace; font-size: 11px; font-weight: 700; letter-spacing: 3px; color: var(--green); }
+.ai-sub { font-family: 'Share Tech Mono', monospace; font-size: 9px; letter-spacing: 2px; color: rgba(0,255,157,0.5); }
+
+/* ── REGISTER NOTICE ── */
+.reg-notice {
+  background: linear-gradient(135deg, rgba(255,215,0,0.06), rgba(255,45,120,0.06));
+  border: 1px solid rgba(255,215,0,0.2); border-radius: 14px; padding: 14px 18px;
+  margin-bottom: 18px; text-align: center;
+  animation: notice-glow 3s ease-in-out infinite;
+}
+.notice-icon { font-size: 22px; margin-bottom: 6px; }
+.notice-title { font-family: 'Orbitron', monospace; font-size: 11px; letter-spacing: 2px; color: var(--gold); margin-bottom: 6px; }
+.notice-body { font-family: 'Rajdhani', sans-serif; font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.75); line-height: 1.55; }
+.notice-body span { color: var(--pink); font-weight: 700; }
+.notice-body strong { color: var(--gold); }
+.notice-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 10px; padding: 8px 20px; border-radius: 25px;
+  background: linear-gradient(135deg, rgba(255,45,120,0.15), rgba(180,74,255,0.12));
+  border: 1px solid rgba(255,45,120,0.3); color: #ff7aaa;
+  text-decoration: none; font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 700;
+  letter-spacing: 1px; transition: all 0.25s;
+}
+.notice-link:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,45,120,0.25); }
+
+/* ── MONEY MANAGEMENT ── */
+.mm-banner {
+  background: linear-gradient(135deg, rgba(0,245,255,0.05), rgba(180,74,255,0.05));
+  border: 1px solid rgba(0,245,255,0.15); border-radius: 12px; padding: 12px 16px;
+  margin-bottom: 20px; display: flex; align-items: center; gap: 12px;
+}
+.mm-icon { font-size: 20px; flex-shrink: 0; }
+.mm-text { font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.65); line-height: 1.5; }
+.mm-text strong { color: var(--cyan); }
+
+/* ── INPUT ── */
+.input-section { margin-bottom: 18px; }
+.input-label { font-family: 'Orbitron', monospace; font-size: 9px; letter-spacing: 4px; color: rgba(0,245,255,0.4); text-align: center; margin-bottom: 10px; }
+.input-row { display: flex; gap: 10px; }
+.period-input {
+  flex: 1; background: rgba(0,245,255,0.04); border: 1px solid rgba(0,245,255,0.18);
+  border-radius: 12px; padding: 15px 18px;
+  font-family: 'Orbitron', monospace; font-size: 14px; font-weight: 700; color: var(--cyan);
+  outline: none; letter-spacing: 2px; transition: all 0.3s; text-align: center;
+}
+.period-input::placeholder { color: rgba(0,245,255,0.2); font-size: 10px; letter-spacing: 1px; font-weight: 400; }
+.period-input:focus { border-color: rgba(0,245,255,0.6); background: rgba(0,245,255,0.08); box-shadow: 0 0 24px rgba(0,245,255,0.1); }
+
+.predict-btn {
+  position: relative; overflow: hidden;
+  background: linear-gradient(135deg, var(--cyan), #0099bb);
+  border: none; border-radius: 12px; padding: 15px 20px;
+  font-family: 'Orbitron', monospace; font-size: 10px; font-weight: 900; color: #000;
+  letter-spacing: 2px; cursor: pointer; transition: all 0.25s; white-space: nowrap; flex-shrink: 0;
+}
+.predict-btn::after { content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0.15); opacity: 0; transition: opacity 0.2s; }
+.predict-btn:hover:not(:disabled)::after { opacity: 1; }
+.predict-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,245,255,0.4); }
+.predict-btn:active:not(:disabled) { transform: translateY(0); }
+.predict-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* INVALID */
+.invalid-msg { display: none; align-items: center; gap: 10px; background: rgba(255,45,45,0.08); border: 1px solid rgba(255,60,60,0.28); border-radius: 10px; padding: 12px 16px; margin-top: 10px; }
+.invalid-msg.show { display: flex; animation: shake 0.4s ease; }
+.invalid-text { font-size: 13px; font-weight: 700; color: #ff7070; }
+
+/* ── RESULT CARD ── */
+.result-card {
+  display: none; border-radius: 20px; overflow: hidden;
+  border: 1px solid var(--border); background: var(--card);
+  margin-bottom: 18px; position: relative;
+}
+.result-card.visible { display: block; animation: card-appear 0.4s cubic-bezier(0.34,1.4,0.64,1); }
+.card-corner-tl, .card-corner-tr, .card-corner-bl, .card-corner-br {
+  position: absolute; width: 16px; height: 16px; z-index: 2;
+}
+.card-corner-tl { top: 0; left: 0; border-top: 2px solid var(--cyan); border-left: 2px solid var(--cyan); border-radius: 4px 0 0 0; }
+.card-corner-tr { top: 0; right: 0; border-top: 2px solid var(--pink); border-right: 2px solid var(--pink); border-radius: 0 4px 0 0; }
+.card-corner-bl { bottom: 0; left: 0; border-bottom: 2px solid var(--pink); border-left: 2px solid var(--pink); border-radius: 0 0 0 4px; }
+.card-corner-br { bottom: 0; right: 0; border-bottom: 2px solid var(--cyan); border-right: 2px solid var(--cyan); border-radius: 0 0 4px 0; }
+
+.card-header { padding: 12px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.period-tag { font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: 2px; color: rgba(0,245,255,0.5); }
+.live-pill { display: flex; align-items: center; gap: 5px; background: rgba(255,45,120,0.1); border: 1px solid rgba(255,45,120,0.25); border-radius: 20px; padding: 3px 10px; }
+.live-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--pink); animation: orb-blink 1s ease-in-out infinite; }
+.live-text { font-family: 'Orbitron', monospace; font-size: 8px; letter-spacing: 2px; color: rgba(255,100,150,0.8); }
+
+/* AI PROCESSING */
+.ai-process-section { padding: 12px 20px; border-bottom: 1px solid var(--border); display: none; }
+.ai-process-section.show { display: block; }
+.ai-process-label { font-family: 'Share Tech Mono', monospace; font-size: 9px; letter-spacing: 3px; color: rgba(0,255,157,0.5); margin-bottom: 8px; }
+.ai-steps { display: flex; flex-direction: column; gap: 5px; }
+.ai-step { display: flex; align-items: center; gap: 8px; font-family: 'Share Tech Mono', monospace; font-size: 10px; color: rgba(255,255,255,0.3); transition: all 0.3s; }
+.ai-step.active { color: rgba(0,255,157,0.8); }
+.ai-step.done { color: rgba(0,245,255,0.5); }
+.step-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.15); flex-shrink: 0; transition: all 0.3s; }
+.ai-step.active .step-dot { background: var(--green); box-shadow: 0 0 8px var(--green); animation: orb-blink 0.8s ease-in-out infinite; }
+.ai-step.done .step-dot { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
+.step-bar { flex: 1; height: 2px; background: rgba(255,255,255,0.05); border-radius: 99px; overflow: hidden; }
+.step-bar-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--cyan)); width: 0%; transition: width 0.5s ease; border-radius: 99px; }
+
+/* NUMBER DISPLAY */
+.number-display { padding: 32px 20px; text-align: center; position: relative; overflow: hidden; }
+.scan-line { position: absolute; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, rgba(0,245,255,0.6), transparent); top: 0; animation: scanline 1.5s linear infinite; opacity: 0; }
+.scan-line.active { opacity: 1; }
+
+.loading-state { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.slot-box { width: 100px; height: 100px; border-radius: 16px; background: rgba(0,245,255,0.03); border: 1px solid rgba(0,245,255,0.1); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+.slot-box::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(0,245,255,0.04), transparent); }
+.slot-num { font-family: 'Orbitron', monospace; font-size: 64px; font-weight: 900; line-height: 1; color: var(--cyan); position: relative; z-index: 1; }
+.load-bar-wrap { width: 200px; height: 3px; background: rgba(255,255,255,0.05); border-radius: 99px; overflow: hidden; }
+.load-bar-fill { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--pink)); border-radius: 99px; width: 0%; transition: width 0.06s linear; }
+.load-text { font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 3px; color: rgba(0,245,255,0.35); }
+
+.result-state { display: none; flex-direction: column; align-items: center; gap: 12px; }
+.big-number { font-family: 'Orbitron', monospace; font-size: 96px; font-weight: 900; line-height: 1; animation: pop-in 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+.color-badge { display: flex; align-items: center; gap: 9px; padding: 7px 22px; border-radius: 25px; font-family: 'Rajdhani', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 2px; animation: fade-up 0.4s 0.15s both; }
+.color-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.size-badge { font-family: 'Orbitron', monospace; font-size: 11px; letter-spacing: 3px; padding: 5px 20px; border-radius: 25px; animation: fade-up 0.4s 0.28s both; }
+
+/* AI INSIGHT BOX */
+.ai-insight {
+  margin: 0 20px 16px;
+  background: rgba(0,255,157,0.04);
+  border: 1px solid rgba(0,255,157,0.15);
+  border-radius: 12px; padding: 12px 16px;
+  display: none; animation: fade-up 0.4s 0.4s both;
+}
+.ai-insight.show { display: block; }
+.ai-insight-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.ai-insight-icon { font-size: 14px; }
+.ai-insight-title { font-family: 'Orbitron', monospace; font-size: 9px; letter-spacing: 3px; color: rgba(0,255,157,0.7); }
+.ai-insight-text { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.55); line-height: 1.7; min-height: 40px; }
+.ai-typing-cursor { display: inline-block; width: 7px; height: 12px; background: var(--green); margin-left: 2px; animation: blink-cursor 0.7s step-end infinite; vertical-align: middle; }
+
+/* HISTORY */
+.history-section { display: none; }
+.history-title { font-family: 'Orbitron', monospace; font-size: 9px; letter-spacing: 4px; color: rgba(255,255,255,0.15); text-align: center; margin-bottom: 10px; }
+.history-row { display: flex; flex-wrap: wrap; gap: 7px; justify-content: center; }
+.history-chip { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 9px; padding: 6px 12px; display: flex; align-items: center; gap: 8px; animation: chip-in 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+.chip-period { font-family: 'Share Tech Mono', monospace; font-size: 9px; color: rgba(255,255,255,0.18); }
+.chip-num { font-family: 'Orbitron', monospace; font-size: 15px; font-weight: 900; }
+
+/* BOTTOM LINKS */
+.divider { width: 100%; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent); margin: 20px 0; }
+.bottom-links { display: flex; flex-direction: column; gap: 10px; }
+.big-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px 20px; border-radius: 13px; font-family: 'Rajdhani', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 1px; text-decoration: none; transition: all 0.25s; }
+.big-tg { background: rgba(0,136,204,0.08); border: 1px solid rgba(0,136,204,0.25); color: #29b6f6; }
+.big-tg:hover { background: rgba(0,136,204,0.18); transform: translateY(-2px); box-shadow: 0 6px 22px rgba(0,136,204,0.2); }
+.big-reg { background: linear-gradient(135deg, rgba(255,45,120,0.1), rgba(180,74,255,0.08)); border: 1px solid rgba(255,45,120,0.28); color: #ff7aaa; }
+.big-reg:hover { background: linear-gradient(135deg, rgba(255,45,120,0.2), rgba(180,74,255,0.15)); transform: translateY(-2px); box-shadow: 0 6px 22px rgba(255,45,120,0.2); }
+
+.footer-text { text-align: center; font-family: 'Share Tech Mono', monospace; font-size: 9px; letter-spacing: 3px; color: rgba(255,255,255,0.06); margin-top: 24px; }
+
+/* ── ANIMATIONS ── */
+@keyframes logo-shimmer { 0%{background-position:0%} 100%{background-position:300%} }
+@keyframes orb-blink { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
+@keyframes orb-ring { 0%,100%{opacity:0.5;transform:scale(1)} 50%{opacity:0;transform:scale(1.8)} }
+@keyframes badge-pulse { 0%,100%{box-shadow:0 0 0 rgba(0,255,157,0)} 50%{box-shadow:0 0 20px rgba(0,255,157,0.08)} }
+@keyframes notice-glow { 0%,100%{box-shadow:0 0 0 rgba(255,215,0,0)} 50%{box-shadow:0 0 25px rgba(255,215,0,0.07)} }
+@keyframes scanline { 0%{top:0} 100%{top:100%} }
+@keyframes pop-in { 0%{transform:scale(0.3) translateY(40px);opacity:0} 100%{transform:scale(1) translateY(0);opacity:1} }
+@keyframes fade-up { 0%{transform:translateY(14px);opacity:0} 100%{transform:translateY(0);opacity:1} }
+@keyframes chip-in { 0%{transform:scale(0.6);opacity:0} 100%{transform:scale(1);opacity:1} }
+@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+@keyframes card-appear { 0%{transform:translateY(20px);opacity:0} 100%{transform:translateY(0);opacity:1} }
+@keyframes float-up { 0%{transform:translateY(0) translateX(0);opacity:0} 15%{opacity:0.5} 85%{opacity:0.3} 100%{transform:translateY(-100vh) translateX(var(--drift));opacity:0} }
+@keyframes blink-cursor { 0%,100%{opacity:1} 50%{opacity:0} }
+</style>
+</head>
+<body>
+
+<div class="bg-canvas">
+  <div class="bg-grid"></div>
+  <div class="bg-radial-1"></div>
+  <div class="bg-radial-2"></div>
+  <div class="bg-radial-3"></div>
+</div>
+
+<div class="container">
+
+  <!-- TOP NAV -->
+  <div class="top-nav">
+    <a class="nav-btn tg-btn" href="https://t.me/HGNICEVIP" target="_blank">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M21.8 3.1L1.2 10.9c-1.3.5-1.3 1.3-.2 1.6l5.1 1.6 11.8-7.4c.6-.3 1.1-.1.7.4L9 16.1l-.4 5.2c.5 0 .8-.2 1.1-.5l2.6-2.5 5.2 3.8c.9.5 1.6.3 1.9-.9l3.4-16c.4-1.5-.5-2.2-1-1.1z" fill="#29b6f6"/></svg>
+      Telegram Group
+    </a>
+    <a class="nav-btn reg-btn" href="https://hgnice.cc/#/register?invitationCode=41641354536" target="_blank">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" fill="#ff7aaa"/></svg>
+      রেজিস্টার করুন
+    </a>
+  </div>
+
+  <!-- LOGO -->
+  <div class="header">
+    <div class="logo-wrap">
+      <div class="logo">WIN GO</div>
+      <div class="logo-glow"></div>
+    </div>
+    <div class="logo-sub">AI PREDICTION SYSTEM v3.0</div>
+  </div>
+
+  <!-- AI ACTIVE BADGE -->
+  <div style="display:flex;justify-content:center;margin-bottom:18px;">
+    <div class="ai-active-badge">
+      <div class="ai-orb">
+        <div class="ai-orb-inner"></div>
+        <div class="ai-orb-ring"></div>
+      </div>
+      <div class="ai-text-wrap">
+        <div class="ai-title">AI ENGINE ACTIVE</div>
+        <div class="ai-sub">NEURAL PREDICTION ONLINE</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGISTER NOTICE -->
+  <div class="reg-notice">
+    <div class="notice-icon">⚠️</div>
+    <div class="notice-title">⚡ IMPORTANT NOTICE</div>
+    <div class="notice-body">
+      <span>রেজিস্টার না করলে এই AI সিস্টেম সীমিত কাজ করবে।</span><br>
+      <strong>রেজিস্টার করুন → আনলিমিটেড প্রেডিকশন পান → আয় করুন</strong><br>
+      সবসময় <span>Money Management</span> ফলো করুন — লাভ নিশ্চিত করুন!
+    </div>
+    <a class="notice-link" href="https://hgnice.cc/#/register?invitationCode=41641354536" target="_blank">
+      🎯 এখনই রেজিস্টার করুন — HGNICE VIP
+    </a>
+  </div>
+
+  <!-- MONEY MANAGEMENT BANNER -->
+  <div class="mm-banner">
+    <div class="mm-icon">💰</div>
+    <div class="mm-text">
+      <strong>Money Management:</strong> প্রতিবার মোট ব্যালেন্সের ৫-১০% এর বেশি বাজি ধরবেন না। হেরে গেলে ঠান্ডা মাথায় পরের রাউন্ডের জন্য অপেক্ষা করুন।
+    </div>
+  </div>
+
+  <!-- INPUT -->
+  <div class="input-section">
+    <div class="input-label">◈ ENTER PERIOD NUMBER ◈</div>
+    <div class="input-row">
+      <input class="period-input" id="periodInput" type="text" placeholder="e.g. 20241201001" maxlength="25" autocomplete="off"/>
+      <button class="predict-btn" id="goBtn" onclick="startGenerate()">AI PREDICT</button>
+    </div>
+    <div class="invalid-msg" id="invalidMsg">
+      <span>⛔</span>
+      <div class="invalid-text">এই Period আগেই Predict করা হয়েছে। নতুন Period দিন।</div>
+    </div>
+  </div>
+
+  <!-- RESULT CARD -->
+  <div class="result-card" id="resultCard">
+    <div class="card-corner-tl"></div>
+    <div class="card-corner-tr"></div>
+    <div class="card-corner-bl"></div>
+    <div class="card-corner-br"></div>
+
+    <div class="card-header">
+      <div class="period-tag" id="periodLabel">PERIOD: —</div>
+      <div class="live-pill"><div class="live-dot"></div><span class="live-text">LIVE</span></div>
+    </div>
+
+    <!-- AI PROCESSING STEPS -->
+    <div class="ai-process-section" id="aiProcess">
+      <div class="ai-process-label">◈ AI ANALYSIS PROCESS</div>
+      <div class="ai-steps">
+        <div class="ai-step" id="step1"><div class="step-dot"></div><span>Neural network initialization</span><div class="step-bar"><div class="step-bar-fill" id="bar1"></div></div></div>
+        <div class="ai-step" id="step2"><div class="step-dot"></div><span>Pattern recognition scan</span><div class="step-bar"><div class="step-bar-fill" id="bar2"></div></div></div>
+        <div class="ai-step" id="step3"><div class="step-dot"></div><span>Historical data analysis</span><div class="step-bar"><div class="step-bar-fill" id="bar3"></div></div></div>
+        <div class="ai-step" id="step4"><div class="step-dot"></div><span>Probability calculation</span><div class="step-bar"><div class="step-bar-fill" id="bar4"></div></div></div>
+        <div class="ai-step" id="step5"><div class="step-dot"></div><span>Final prediction output</span><div class="step-bar"><div class="step-bar-fill" id="bar5"></div></div></div>
+      </div>
+    </div>
+
+    <div class="number-display">
+      <div class="scan-line" id="scanLine"></div>
+      <div class="loading-state" id="loadingState">
+        <div class="slot-box"><span class="slot-num" id="slotNum">?</span></div>
+        <div class="load-bar-wrap"><div class="load-bar-fill" id="loadBar"></div></div>
+        <div class="load-text" id="loadText">AI Processing...</div>
+      </div>
+      <div class="result-state" id="resultState">
+        <div class="big-number" id="bigNum">0</div>
+        <div class="color-badge" id="colorBadge"><div class="color-dot" id="colorDot"></div><span id="colorName">—</span></div>
+        <div class="size-badge" id="sizeBadge">—</div>
+      </div>
+    </div>
+
+    <!-- AI INSIGHT -->
+    <div class="ai-insight" id="aiInsight">
+      <div class="ai-insight-header">
+        <span class="ai-insight-icon">🤖</span>
+        <span class="ai-insight-title">◈ AI SPECIAL INSIGHT</span>
+      </div>
+      <div class="ai-insight-text" id="aiInsightText"></div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="history-section" id="historySection">
+    <div class="divider"></div>
+    <div class="history-title">◈ RECENT AI PREDICTIONS ◈</div>
+    <div class="history-row" id="historyRow"></div>
+  </div>
+
+  <!-- BOTTOM LINKS -->
+  <div class="bottom-links">
+    <div class="divider"></div>
+    <a class="big-btn big-tg" href="https://t.me/HGNICEVIP" target="_blank">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M21.8 3.1L1.2 10.9c-1.3.5-1.3 1.3-.2 1.6l5.1 1.6 11.8-7.4c.6-.3 1.1-.1.7.4L9 16.1l-.4 5.2c.5 0 .8-.2 1.1-.5l2.6-2.5 5.2 3.8c.9.5 1.6.3 1.9-.9l3.4-16c.4-1.5-.5-2.2-1-1.1z" fill="#29b6f6"/></svg>
+      📢 Join Telegram — t.me/HGNICEVIP
+    </a>
+    <a class="big-btn big-reg" href="https://hgnice.cc/#/register?invitationCode=41641354536" target="_blank">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" fill="#ff7aaa"/></svg>
+      🎯 রেজিস্টার করুন → আয় শুরু করুন — HGNICE VIP
+    </a>
+  </div>
+
+  <div class="footer-text">WIN GO AI SYSTEM © 2024 — HGNICE VIP — POWERED BY AI</div>
+</div>
+
+<script>
+// ── COLOR MAP ──
+const colorMap = {
+  0:{name:'RED VIOLET',hex:'#e74c7a',bg:'rgba(231,76,122,0.13)',border:'rgba(231,76,122,0.3)',text:'#ff7aaa'},
+  1:{name:'GREEN',hex:'#00e676',bg:'rgba(0,230,118,0.13)',border:'rgba(0,230,118,0.3)',text:'#00e676'},
+  2:{name:'RED',hex:'#ff4444',bg:'rgba(255,60,60,0.13)',border:'rgba(255,60,60,0.3)',text:'#ff6666'},
+  3:{name:'GREEN',hex:'#00e676',bg:'rgba(0,230,118,0.13)',border:'rgba(0,230,118,0.3)',text:'#00e676'},
+  4:{name:'RED',hex:'#ff4444',bg:'rgba(255,60,60,0.13)',border:'rgba(255,60,60,0.3)',text:'#ff6666'},
+  5:{name:'GREEN VIOLET',hex:'#b44aff',bg:'rgba(180,74,255,0.13)',border:'rgba(180,74,255,0.3)',text:'#c084fc'},
+  6:{name:'RED',hex:'#ff4444',bg:'rgba(255,60,60,0.13)',border:'rgba(255,60,60,0.3)',text:'#ff6666'},
+  7:{name:'GREEN',hex:'#00e676',bg:'rgba(0,230,118,0.13)',border:'rgba(0,230,118,0.3)',text:'#00e676'},
+  8:{name:'RED',hex:'#ff4444',bg:'rgba(255,60,60,0.13)',border:'rgba(255,60,60,0.3)',text:'#ff6666'},
+  9:{name:'GREEN',hex:'#00e676',bg:'rgba(0,230,118,0.13)',border:'rgba(0,230,118,0.3)',text:'#00e676'}
+};
+
+const loadLabels = ['AI Engine Starting...','Neural Scan Active...','Pattern Matching...','Calculating Probability...','AI Result Ready!'];
+
+const aiInsights = [
+  "AI বিশ্লেষণ সম্পন্ন। এই রাউন্ডে {color} সংখ্যার সম্ভাবনা {conf}%। মানি ম্যানেজমেন্ট মনে রাখুন — বেশি রিস্ক নেবেন না!",
+  "Neural pattern analysis: {size} trend detected. {color} indicator strong। রেজিস্টার করা ব্যবহারকারীরা সবসময় এগিয়ে থাকেন।",
+  "AI confidence level: {conf}% — {color} signal confirmed। প্রতিটি রাউন্ডে ব্যালেন্সের মাত্র ১০% বাজি ধরুন।",
+  "Deep learning model output: {size} result — {color}। সফল ট্রেডারদের রহস্য: discipline + money management।",
+  "AI prediction locked: {color} with {conf}% accuracy। মনে রাখুন — লস হলে রাগ করে বড় বাজি ধরবেন না!"
+];
+
+let isRunning = false;
+let lastResult = null;
+let history = [];
+let usedPeriods = new Set();
+let slotInterval = null;
+
+// ── PARTICLES ──
+(function spawnParticles() {
+  const canvas = document.querySelector('.bg-canvas');
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random() * 3 + 1;
+    p.style.cssText = `
+      width:${size}px; height:${size}px;
+      left:${Math.random()*100}%;
+      bottom:-10px;
+      background:${Math.random()>0.5?'rgba(0,245,255,0.3)':'rgba(255,45,120,0.3)'};
+      --drift:${(Math.random()-0.5)*120}px;
+      animation-duration:${8+Math.random()*12}s;
+      animation-delay:${Math.random()*10}s;
+    `;
+    canvas.appendChild(p);
+  }
+})();
+
+function getResult(period) {
+  let seed = 0;
+  for (let i = 0; i < period.length; i++) seed += period.charCodeAt(i) * (i + 7);
+  let n = Math.abs((seed * 1234567 + history.length * 31 + Date.now()) % 10);
+  if (lastResult !== null && n === lastResult) n = (n + 1 + Math.floor(Math.random() * 4)) % 10;
+  return n;
+}
+
+function hideInvalid() { document.getElementById('invalidMsg').classList.remove('show'); }
+function showInvalid() {
+  const el = document.getElementById('invalidMsg');
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+}
+
+async function runAISteps() {
+  const steps = [1,2,3,4,5];
+  for (let i = 0; i < steps.length; i++) {
+    const step = document.getElementById('step' + steps[i]);
+    const bar = document.getElementById('bar' + steps[i]);
+    step.classList.add('active');
+    await animateBar(bar, 0, 100, 320);
+    step.classList.remove('active');
+    step.classList.add('done');
+    await sleep(80);
+  }
+}
+
+function animateBar(bar, from, to, duration) {
+  return new Promise(resolve => {
+    const start = performance.now();
+    function tick(now) {
+      const t = Math.min((now - start) / duration, 1);
+      bar.style.width = (from + (to - from) * t) + '%';
+      if (t < 1) requestAnimationFrame(tick);
+      else resolve();
+    }
+    requestAnimationFrame(tick);
+  });
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function typeText(el, text, speed = 28) {
+  return new Promise(resolve => {
+    let i = 0;
+    el.innerHTML = '';
+    const cursor = document.createElement('span');
+    cursor.className = 'ai-typing-cursor';
+    function next() {
+      if (i < text.length) {
+        el.textContent = text.slice(0, i + 1);
+        el.appendChild(cursor);
+        i++;
+        setTimeout(next, speed + Math.random() * 15);
+      } else {
+        cursor.remove();
+        resolve();
+      }
+    }
+    next();
+  });
+}
+
+async function startGenerate() {
+  const val = document.getElementById('periodInput').value.trim();
+  if (!val || isRunning) return;
+  if (usedPeriods.has(val)) { showInvalid(); return; }
+
+  hideInvalid();
+  isRunning = true;
+  document.getElementById('goBtn').disabled = true;
+  usedPeriods.add(val);
+
+  const card = document.getElementById('resultCard');
+  card.classList.add('visible');
+  document.getElementById('periodLabel').textContent = 'PERIOD: ' + val;
+
+  // Reset card state
+  document.getElementById('aiProcess').classList.add('show');
+  document.getElementById('aiInsight').classList.remove('show');
+  [1,2,3,4,5].forEach(i => {
+    const s = document.getElementById('step' + i);
+    s.classList.remove('active','done');
+    document.getElementById('bar' + i).style.width = '0%';
+  });
+
+  const loadState = document.getElementById('loadingState');
+  const resState = document.getElementById('resultState');
+  const scanLine = document.getElementById('scanLine');
+
+  loadState.style.display = 'flex';
+  resState.style.display = 'none';
+  scanLine.classList.add('active');
+
+  const loadBar = document.getElementById('loadBar');
+  const loadText = document.getElementById('loadText');
+  const slotNum = document.getElementById('slotNum');
+
+  loadBar.style.width = '0%';
+  let progress = 0, labelIdx = 0;
+
+  slotInterval = setInterval(() => {
+    slotNum.textContent = Math.floor(Math.random() * 10);
+    slotNum.style.color = `hsl(${Math.random()*360},80%,65%)`;
+  }, 60);
+
+  // Run AI steps in parallel with load bar
+  runAISteps();
+
+  const interval = setInterval(() => {
+    progress += 1.2;
+    loadBar.style.width = Math.min(progress, 96) + '%';
+    const idx = Math.floor(progress / 22);
+    if (idx < loadLabels.length && idx !== labelIdx) { labelIdx = idx; loadText.textContent = loadLabels[idx]; }
+    if (progress >= 100) { clearInterval(interval); loadBar.style.width = '100%'; setTimeout(() => showResult(val), 300); }
+  }, 38);
+}
+
+async function showResult(period) {
+  clearInterval(slotInterval);
+  const n = getResult(period);
+  lastResult = n;
+  history.unshift({ period, n });
+  if (history.length > 7) history.pop();
+
+  const col = colorMap[n];
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('scanLine').classList.remove('active');
+
+  const resState = document.getElementById('resultState');
+  resState.style.display = 'flex';
+
+  const bigNum = document.getElementById('bigNum');
+  bigNum.textContent = n;
+  bigNum.style.color = col.hex;
+  bigNum.style.textShadow = `0 0 40px ${col.hex}80, 0 0 80px ${col.hex}35`;
+
+  const badge = document.getElementById('colorBadge');
+  badge.style.background = col.bg;
+  badge.style.border = `1px solid ${col.border}`;
+  badge.style.color = col.text;
+  document.getElementById('colorDot').style.background = col.hex;
+  document.getElementById('colorDot').style.boxShadow = `0 0 8px ${col.hex}`;
+  document.getElementById('colorName').textContent = col.name;
+
+  const sizeBadge = document.getElementById('sizeBadge');
+  if (n <= 4) {
+    sizeBadge.textContent = 'SMALL';
+    sizeBadge.style.background = 'rgba(0,180,255,0.1)';
+    sizeBadge.style.border = '1px solid rgba(0,180,255,0.22)';
+    sizeBadge.style.color = '#00b4ff';
+  } else {
+    sizeBadge.textContent = 'BIG';
+    sizeBadge.style.background = 'rgba(255,170,0,0.1)';
+    sizeBadge.style.border = '1px solid rgba(255,170,0,0.22)';
+    sizeBadge.style.color = '#ffaa00';
+  }
+
+  // AI Insight with typing effect
+  await sleep(400);
+  const conf = 72 + Math.floor(Math.random() * 22);
+  const size = n <= 4 ? 'SMALL' : 'BIG';
+  const template = aiInsights[Math.floor(Math.random() * aiInsights.length)];
+  const insightText = template
+    .replace(/{color}/g, col.name)
+    .replace(/{conf}/g, conf)
+    .replace(/{size}/g, size);
+
+  const insightEl = document.getElementById('aiInsight');
+  insightEl.classList.add('show');
+  await typeText(document.getElementById('aiInsightText'), insightText, 22);
+
+  updateHistory();
+
+  setTimeout(() => {
+    isRunning = false;
+    document.getElementById('goBtn').disabled = false;
+  }, 400);
+}
+
+function updateHistory() {
+  const section = document.getElementById('historySection');
+  const row = document.getElementById('historyRow');
+  if (!history.length) return;
+  section.style.display = 'block';
+  row.innerHTML = '';
+  history.forEach(item => {
+    const col = colorMap[item.n];
+    const chip = document.createElement('div');
+    chip.className = 'history-chip';
+    chip.style.borderColor = col.hex + '28';
+    chip.innerHTML = `<span class="chip-period">${item.period.length > 8 ? '...' + item.period.slice(-7) : item.period}</span><span class="chip-num" style="color:${col.hex};text-shadow:0 0 10px ${col.hex}60">${item.n}</span>`;
+    row.appendChild(chip);
+  });
+}
+
+document.getElementById('periodInput').addEventListener('keydown', e => { if (e.key === 'Enter') startGenerate(); else hideInvalid(); });
+document.getElementById('periodInput').addEventListener('input', hideInvalid);
+</script>
+</body>
+</html>
